@@ -10,7 +10,7 @@ export default function LaunchStamp({ iso, locale = 'pl-PL' }: Props) {
 
 	const parts = useMemo(() => {
 		if (!dateObj || isNaN(dateObj.getTime())) {
-			return { date: '—.—', timeH: '—', timeM: '—', timeS: '—', tz: '' };
+			return { date: '—.—', h: '—', m: '—', s: '—', tz: '' };
 		}
 		const dd = new Intl.DateTimeFormat(locale, { day: '2-digit' }).format(
 			dateObj
@@ -20,65 +20,87 @@ export default function LaunchStamp({ iso, locale = 'pl-PL' }: Props) {
 		);
 		const date = `${dd}.${mm}`;
 
-		const hh = new Intl.DateTimeFormat(locale, {
+		const h = new Intl.DateTimeFormat(locale, {
 			hour: '2-digit',
 			hour12: false,
 		}).format(dateObj);
-		const min = new Intl.DateTimeFormat(locale, { minute: '2-digit' }).format(
+		const m = new Intl.DateTimeFormat(locale, { minute: '2-digit' }).format(
 			dateObj
 		);
-		const ss = new Intl.DateTimeFormat(locale, { second: '2-digit' }).format(
+		const s = new Intl.DateTimeFormat(locale, { second: '2-digit' }).format(
 			dateObj
 		);
 
-		const tzShort =
+		const tz =
 			new Intl.DateTimeFormat(locale, { timeZoneName: 'short' })
 				.format(dateObj)
 				.split(' ')
 				.pop() || '';
 
-		return { date, timeH: hh, timeM: min, timeS: ss, tz: tzShort };
+		return { date, h, m, s, tz };
 	}, [dateObj, locale]);
 
-	// pomocnicze dwukropki z delikatnym pulsem
+	// Dwukropek o stałej szerokości, z delikatnym pulsem (bez „skakania” layoutu)
 	const Colon = () => (
-		<span className='inline-block px-1 opacity-90 animate-pulse [animation-duration:1.25s]'>
+		<span className='inline-block w-[0.7ch] text-center opacity-90 animate-pulse [animation-duration:1.4s]'>
 			:
 		</span>
 	);
 
 	return (
-		<div className='mt-8'>
+		<div className='mt-8 w-full'>
 			{/* gradient border + glass */}
-			<div className='relative mx-auto w-fit rounded-2xl p-[1.5px] bg-gradient-to-r from-[#7b4cff] via-[#30cfff] to-[#7b4cff]'>
-				<div className='rounded-2xl bg-[#0b0f1a]/80 px-6 py-4 backdrop-blur-md'>
+			<div className='relative mx-auto max-w-[min(92vw,760px)] rounded-2xl p-[1.5px] bg-gradient-to-r from-[#7b4cff] via-[#30cfff] to-[#7b4cff]'>
+				<div className='rounded-2xl bg-[#0b0f1a]/80 px-4 py-4 sm:px-6 sm:py-5 backdrop-blur-md'>
+					{/* Mobile: dwie linie; Desktop: jedna linia */}
 					<time
 						dateTime={iso || ''}
-						className='flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-6'
+						aria-label={`Launch ${parts.date} ${parts.h}:${parts.m}:${parts.s} ${parts.tz}`}
+						className='
+              grid items-center justify-center gap-y-2
+              grid-cols-1
+              sm:grid-cols-[auto_12px_auto_auto]
+              sm:gap-x-4
+              text-center sm:text-left
+            '
 					>
 						{/* DATA */}
-						<span className='font-mono tabular-nums text-5xl md:text-7xl font-black tracking-tight text-white'>
+						<span
+							className='
+                mx-auto sm:mx-0
+                font-mono tabular-nums font-black tracking-tight
+                text-[clamp(28px,10vw,56px)]
+                leading-[1.05]
+              '
+						>
 							{parts.date}
 						</span>
 
-						{/* separator (kropeczka) */}
+						{/* separator (kropka) – tylko od sm w górę */}
 						<span
 							aria-hidden
-							className='hidden sm:inline-block h-4 w-4 rounded-full bg-gradient-to-br from-[#7b4cff] to-[#30cfff] opacity-80'
+							className='hidden sm:block h-2 w-2 rounded-full bg-gradient-to-br from-[#7b4cff] to-[#30cfff] opacity-90'
 						/>
 
 						{/* GODZINA */}
-						<span className='font-mono tabular-nums text-4xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-[#7b4cff] to-[#30cfff] bg-clip-text text-transparent leading-none'>
-							{parts.timeH}
+						<span
+							className='
+                mx-auto sm:mx-0
+                font-mono tabular-nums font-extrabold tracking-tight leading-none
+                bg-gradient-to-r from-[#7b4cff] to-[#30cfff] bg-clip-text text-transparent
+                text-[clamp(22px,8.5vw,44px)]
+              '
+						>
+							{parts.h}
 							<Colon />
-							{parts.timeM}
+							{parts.m}
 							<Colon />
-							{parts.timeS}
+							{parts.s}
 						</span>
 
 						{/* strefa czasowa */}
 						{parts.tz && (
-							<span className='text-xs md:text-sm text-white/60 sm:ml-2'>
+							<span className='mx-auto sm:mx-0 text-xs md:text-sm text-white/60'>
 								{parts.tz}
 							</span>
 						)}
@@ -91,7 +113,7 @@ export default function LaunchStamp({ iso, locale = 'pl-PL' }: Props) {
 					className='pointer-events-none absolute -inset-5 -z-10 rounded-[28px] blur-3xl'
 					style={{
 						background:
-							'radial-gradient(closest-side, rgba(123,76,255,0.28), transparent 70%)',
+							'radial-gradient(closest-side, rgba(123,76,255,0.26), transparent 70%)',
 					}}
 				/>
 			</div>
